@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' blob: https://cdn.jsdelivr.net 'wasm-unsafe-eval'; worker-src blob:; connect-src https://cdn.jsdelivr.net https://files.pythonhosted.org; style-src 'self' 'unsafe-inline'; img-src data: blob:; font-src data: blob:; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+    <title>Arhimed cross-origin ManimGX runtime</title>
+  </head>
+  <body>
+    <output id="status">Waiting for authenticated MessageChannel connection…</output>
+    <div id="player-root"></div>
+    <script type="module" src="/src/cross-origin-runtime.ts"></script>
+  </body>
+</html>

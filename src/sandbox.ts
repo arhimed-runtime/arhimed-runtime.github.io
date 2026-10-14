@@ -11,7 +11,7 @@ let active: HTMLElement | undefined;
 
 // Fixed upstream artifacts. The SHA-256 values and source commit are kept in docs/dependencies.md.
 settings.pyodide = "https://cdn.jsdelivr.net/pyodide/v314.0.7/full/";
-settings.manimgx = "https://files.pythonhosted.org/packages/4f/82/d9ccd9a547fdc7b74ce47d7f8a70898d7c2541fb8de3cc62c0fd85a977ba01/manimgx-0.1.1-cp313-abi3-pyemscripten_2026_0_wasm32.whl";
+settings.manimgx = "https://files.pythonhosted.org/packages/4f/82/d9ccd9a547fdc7b74ce47d7a81f55c8d1ae1d72f024a3ece0a18a8dc34be/manimgx-0.1.1-cp313-abi3-pyemscripten_2026_0_wasm32.whl";
 
 function reply(command: ParentCommand, kind: SandboxEvent["kind"], detail: string, data?: SandboxEvent["data"]) {
   const event: SandboxEvent = { protocol: PROTOCOL_VERSION, kind, requestId: command.requestId, revision: command.revision, capability: command.capability, detail, data };

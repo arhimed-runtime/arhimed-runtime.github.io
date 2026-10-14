@@ -10,3 +10,5 @@ The lab runs the real browser build of ManimGX `0.1.1`, installed from npm with 
 - wheel SHA-256: `ef8255890eeaa7281f15afe40c727b5df94199020003f5b698bf18aae94f92ae`
 
 The wheel is selected explicitly through `settings.manimgx`; the lab rejects scene imports other than `import manimgx as m`. This prevents the upstream 0.1.1 loader from installing arbitrary missing Python packages during the experiment.
+
+The cross-origin prototype has shown that the stock 0.1.1 director still resolves dependencies declared by its wheel through PyPI. Its final deployment must use a locked, runtime-origin wheel set and a narrowly modified loader; see `docs/cross-origin-progress.md`.

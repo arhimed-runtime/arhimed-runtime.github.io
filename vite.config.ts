@@ -6,6 +6,13 @@ export default defineConfig({
   preview: { headers: { "Access-Control-Allow-Origin": "*" } },
   build: {
     target: "es2022",
-    rollupOptions: { input: { main: "index.html", sandbox: "sandbox.html" } },
+    rollupOptions: {
+      input: {
+        main: "index.html",
+        sandbox: "sandbox.html",
+        crossOriginParent: "cross-origin-parent.html",
+        crossOriginRuntime: "cross-origin-runtime.html",
+      },
+    },
   },
 });

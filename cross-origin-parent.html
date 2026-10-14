@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src https: http://127.0.0.1:4185" />
+    <title>Arhimed cross-origin runtime parent</title>
+  </head>
+  <body>
+    <main>
+      <h1>Cross-origin ManimGX parent</h1>
+      <p id="summary">Waiting for a runtime URL.</p>
+      <p>Only synthetic controls are present. No Studio project, session, or API key is sent to the runtime.</p>
+      <section><h2>Runtime probes</h2><output id="checks-output"></output></section>
+      <section><h2>Runtime</h2><iframe id="runtime-frame" title="Cross-origin ManimGX runtime" sandbox="allow-scripts allow-same-origin" allow="webgpu" referrerpolicy="strict-origin"></iframe></section>
+      <section><h2>Authenticated MessageChannel events</h2><pre id="events-output"></pre></section>
+    </main>
+    <script type="module" src="/src/cross-origin-parent.ts"></script>
+  </body>
+</html>
