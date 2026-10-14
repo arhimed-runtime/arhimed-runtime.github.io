@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'self'" />
+    <title>Arhimed Runtime Lab</title>
+  </head>
+  <body>
+    <main>
+      <h1>Arhimed Runtime Lab</h1>
+      <p id="summary">Initializing sandbox…</p>
+      <p class="warning">This public lab contains synthetic control values only. It never contains Studio keys or projects.</p>
+      <section aria-labelledby="checks"><h2 id="checks">Security and capability checks</h2><output id="checks-output"></output></section>
+      <section aria-labelledby="runtime"><h2 id="runtime">Real ManimGX 0.1.1</h2><iframe id="runtime-frame" title="Opaque-origin ManimGX sandbox" sandbox="allow-scripts" allow="webgpu"></iframe></section>
+      <section aria-labelledby="events"><h2 id="events">Verified sandbox events</h2><pre id="events-output"></pre></section>
+    </main>
+    <script type="module" src="/src/parent.ts"></script>
+  </body>
+</html>

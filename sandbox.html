@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src blob: https://resarytrew.github.io http://127.0.0.1:4182 http://127.0.0.1:4183 https://cdn.jsdelivr.net 'wasm-unsafe-eval'; worker-src blob:; connect-src https://cdn.jsdelivr.net https://files.pythonhosted.org; style-src https://resarytrew.github.io http://127.0.0.1:4182 http://127.0.0.1:4183 'unsafe-inline'; img-src data: blob:; font-src data: blob:; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+    <title>ManimGX opaque sandbox</title>
+  </head>
+  <body>
+    <output id="status">Waiting for parent capability…</output>
+    <div id="player-root"></div>
+    <script type="module" src="/src/sandbox-bootstrap.ts"></script>
+  </body>
+</html>
