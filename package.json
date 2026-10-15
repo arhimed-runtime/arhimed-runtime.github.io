@@ -10,8 +10,11 @@
     "test": "playwright test",
     "fetch:locked-runtime-assets": "node scripts/fetch-locked-runtime-assets.mjs",
     "verify:locked-runtime-assets": "node scripts/verify-locked-runtime-assets.mjs",
+    "verify:published-runtime-assets": "node scripts/verify-published-runtime-assets.mjs",
     "test:cross-origin": "node scripts/run-cross-origin-tests.mjs",
-    "check:pages-size": "node scripts/check-pages-size.mjs"
+    "check:pages-size": "node scripts/check-pages-size.mjs",
+    "test:pages": "playwright test --config=playwright.pages.config.ts",
+    "test:no-webgpu": "playwright test --config=playwright.no-webgpu.config.ts"
   },
   "dependencies": {
     "manimgx": "0.1.1"
