@@ -23,8 +23,10 @@ function reply(command: Pick<RuntimeCommand, "requestId" | "revision">, kind: Ru
 }
 
 function allowedSource(source: string) {
+  // numpy is preloaded by the immutable Pyodide asset set. It is the only additional
+  // Python import accepted here; no importer, resolver, or package installer is exposed.
   return /^import manimgx as m\s*$/m.test(source)
-    && !/^\s*(from|import)\s+(?!manimgx\b)/m.test(source)
+    && !/^\s*(from|import)\s+(?!(?:manimgx\s+as\s+m|numpy\s+as\s+np)\s*$)/m.test(source)
     && !/\b(__import__|importlib|micropip|fetch|XMLHttpRequest)\b/.test(source);
 }
 
