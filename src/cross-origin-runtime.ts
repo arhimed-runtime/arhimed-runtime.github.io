@@ -1,20 +1,22 @@
-import "manimgx";
-import { settings } from "manimgx";
+import "manimgx-locked";
+import { settings } from "manimgx-locked";
 import { CROSS_ORIGIN_MAX_SOURCE_BYTES, CROSS_ORIGIN_PROTOCOL, type RuntimeCommand, type RuntimeEvent } from "./cross-origin-protocol";
 import "./sandbox.css";
 
 const status = document.querySelector<HTMLOutputElement>("#status")!;
 const root = document.querySelector<HTMLElement>("#player-root")!;
 const allowedParents = new Set(["http://127.0.0.1:4184", "https://resarytrew.github.io"]);
+const simulatedNoWebGpu = new URLSearchParams(location.search).get("simulateNoWebGpu") === "1";
 let port: MessagePort | undefined;
 let sessionId = "";
 let revision = 0;
 let active: HTMLElement | undefined;
 
-// This is a real, immutable GX 0.1.1 browser wheel. The deployment variant will replace
-// both URLs with same-runtime-origin immutable assets after their hashes are verified.
-settings.pyodide = "https://cdn.jsdelivr.net/pyodide/v314.0.7/full/";
-settings.manimgx = "https://files.pythonhosted.org/packages/4f/82/d9ccd9a547fdc7b74ce47d7a81f55c8d1ae1d72f024a3ece0a18a8dc34be/manimgx-0.1.1-cp313-abi3-pyemscripten_2026_0_wasm32.whl";
+// The patched v0.1.1 director receives this as its immutable asset base. It derives all
+// package URLs from here, and never sends a package name to a resolver.
+settings.pyodide = new URL("./runtime-assets/pyodide/", window.location.href).href;
+settings.manimgx = "manimgx==0.1.1";
+if (simulatedNoWebGpu) Object.defineProperty(navigator, "gpu", { configurable: true, value: undefined });
 
 function reply(command: Pick<RuntimeCommand, "requestId" | "revision">, kind: RuntimeEvent["kind"], detail: string, data?: RuntimeEvent["data"]) {
   port?.postMessage({ protocol: CROSS_ORIGIN_PROTOCOL, sessionId, revision: command.revision, requestId: command.requestId, kind, detail, data } satisfies RuntimeEvent);
@@ -27,7 +29,7 @@ function allowedSource(source: string) {
 }
 
 async function probe() {
-  const report: Record<string, boolean | number | string | null> = { webgpuPresent: "gpu" in navigator };
+  const report: Record<string, boolean | number | string | null> = { webgpuPresent: typeof (navigator as Navigator & { gpu?: unknown }).gpu !== "undefined" };
   try { report.parentDomBlocked = parent.document.documentElement.dataset.crossOriginControl !== "PARENT_DOM_ONLY_9bc1"; } catch { report.parentDomBlocked = true; }
   try { report.parentStorageBlocked = parent.localStorage.getItem("arhimed-cross-origin-control") !== "PARENT_LOCAL_STORAGE_ONLY_9bc1"; } catch { report.parentStorageBlocked = true; }
   try { report.parentOpenRouterKeyBlocked = parent.localStorage.getItem("arhimed-openrouter-key") !== "SYNTHETIC_OPENROUTER_KEY_NEVER_SENT_9bc1"; } catch { report.parentOpenRouterKeyBlocked = true; }
@@ -36,6 +38,13 @@ async function probe() {
     const worker = new Worker(URL.createObjectURL(new Blob(["postMessage('module worker ok')"], { type: "text/javascript" })), { type: "module" });
     report.moduleWorkerStarted = await new Promise<boolean>((resolve) => { worker.onmessage = () => { worker.terminate(); resolve(true); }; worker.onerror = () => resolve(false); });
   } catch { report.moduleWorkerStarted = false; }
+  try {
+    const worker = new Worker(URL.createObjectURL(new Blob(["fetch('https://example.invalid/').then(() => postMessage(false)).catch(() => postMessage(true))"], { type: "text/javascript" })), { type: "module" });
+    report.workerEgressBlocked = await new Promise<boolean>((resolve) => {
+      worker.onmessage = ({ data }) => { worker.terminate(); resolve(data === true); };
+      worker.onerror = () => { worker.terminate(); resolve(true); };
+    });
+  } catch { report.workerEgressBlocked = true; }
   try { await fetch("http://127.0.0.1:9/"); report.localhostBlocked = false; } catch { report.localhostBlocked = true; }
   try { await fetch("https://example.invalid/"); report.egressBlocked = false; } catch { report.egressBlocked = true; }
   return report;

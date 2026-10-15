@@ -7,7 +7,9 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "playwright test"
+    "test": "playwright test",
+    "fetch:locked-runtime-assets": "node scripts/fetch-locked-runtime-assets.mjs",
+    "test:cross-origin": "node scripts/run-cross-origin-tests.mjs"
   },
   "dependencies": {
     "manimgx": "0.1.1"

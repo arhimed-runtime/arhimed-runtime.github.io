@@ -23,6 +23,8 @@ if (!suppliedRuntime) {
   const runtimeOrigin = runtimeUrl.origin;
   const sessionId = crypto.randomUUID();
   let port: MessagePort | undefined;
+  let ready = false;
+  let readyTimer = 0;
   let revision = 0;
   let phase: "probe" | "simple" | "reactive" | "stopping" | "restart" | "done" = "probe";
 
@@ -71,6 +73,8 @@ if (!suppliedRuntime) {
       log(event as RuntimeEvent);
       if (event.kind === "failed" || event.kind === "rejected") { summary.textContent = event.detail; return; }
       if (event.kind === "ready") {
+        ready = true;
+        window.clearTimeout(readyTimer);
         summary.textContent = "Authenticated MessageChannel connected; starting isolation probes.";
         send("probe");
         return;
@@ -78,6 +82,9 @@ if (!suppliedRuntime) {
       beginNext(event as RuntimeEvent);
     };
     frame.contentWindow?.postMessage({ protocol: CROSS_ORIGIN_PROTOCOL, kind: "connect", sessionId }, runtimeOrigin, [channel.port2]);
+    readyTimer = window.setTimeout(() => {
+      if (!ready) summary.textContent = "Runtime failed to load or did not accept the authenticated MessageChannel within 10 seconds.";
+    }, 10_000);
   }, { once: true });
   frame.src = runtimeUrl.href;
 }
