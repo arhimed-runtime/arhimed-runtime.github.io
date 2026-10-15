@@ -1,4 +1,4 @@
-name: Publish ManimGX sandbox experiment
+name: Publish locked ManimGX runtime
 
 on:
   push:
@@ -24,7 +24,9 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: npm run verify:locked-runtime-assets
       - run: npm run build
+      - run: npm run check:pages-size
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

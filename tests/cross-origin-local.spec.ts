@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { test, expect } from "@playwright/test";
 
-const assetsAvailable = existsSync("runtime-assets/pyodide/pyodide.mjs");
+const assetsAvailable = existsSync("public/runtime-assets/pyodide/pyodide.mjs");
 const enabled = process.env.ARHIMED_RUN_CROSS_ORIGIN === "1";
 
 test.skip(!assetsAvailable || !enabled, "Run through npm run test:cross-origin after downloading the manifest-verified runtime assets.");
