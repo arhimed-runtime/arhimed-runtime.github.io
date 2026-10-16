@@ -22,14 +22,6 @@ function reply(command: Pick<RuntimeCommand, "requestId" | "revision">, kind: Ru
   port?.postMessage({ protocol: CROSS_ORIGIN_PROTOCOL, sessionId, revision: command.revision, requestId: command.requestId, kind, detail, data } satisfies RuntimeEvent);
 }
 
-function allowedSource(source: string) {
-  // numpy is preloaded by the immutable Pyodide asset set. It is the only additional
-  // Python import accepted here; no importer, resolver, or package installer is exposed.
-  return /^import manimgx as m\s*$/m.test(source)
-    && !/^\s*(from|import)\s+(?!(?:manimgx\s+as\s+m|numpy\s+as\s+np)\s*$)/m.test(source)
-    && !/\b(__import__|importlib|micropip|fetch|XMLHttpRequest)\b/.test(source);
-}
-
 async function probe() {
   const report: Record<string, boolean | number | string | null> = { webgpuPresent: typeof (navigator as Navigator & { gpu?: unknown }).gpu !== "undefined" };
   try { report.parentDomBlocked = parent.document.documentElement.dataset.crossOriginControl !== "PARENT_DOM_ONLY_9bc1"; } catch { report.parentDomBlocked = true; }
@@ -81,8 +73,8 @@ function handle(command: RuntimeCommand) {
     reply(command, "stopped", status.textContent);
     return;
   }
-  if (typeof command.source !== "string" || new TextEncoder().encode(command.source).byteLength > CROSS_ORIGIN_MAX_SOURCE_BYTES || !allowedSource(command.source)) {
-    reply(command, "rejected", "Source rejected by the fixed-runtime policy.");
+  if (typeof command.source !== "string" || new TextEncoder().encode(command.source).byteLength > CROSS_ORIGIN_MAX_SOURCE_BYTES) {
+    reply(command, "rejected", "Source exceeds the 256 KiB fixed-runtime limit.");
     return;
   }
   active?.remove();

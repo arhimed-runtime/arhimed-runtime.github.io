@@ -35,6 +35,18 @@ test("dedicated HTTPS runtime renders a cold scene through its authenticated cha
   process.stdout.write(`${test.info().project.name} HTTPS ManimGX timings: cold=${timings[0]}ms reactive=${timings[1]}ms restart=${timings[2]}ms\n`);
 });
 
+test("dedicated HTTPS runtime renders MathTex, Axes, groups, Python math and an updater to the end", async ({ page }) => {
+  await page.goto(`${acceptanceParent}&scene=documented`);
+  await expect(page.locator("#summary")).toHaveText("Cross-origin run, reactive scene, stop, and restart completed.", { timeout: 75_000 });
+  const runtime = page.frameLocator("#runtime-frame");
+  const player = runtime.locator("manimgx-player");
+  await expect.poll(async () => player.evaluate((element) => {
+    const view = element as HTMLElement & { currentTime: number; duration: number };
+    return Number.isFinite(view.duration) && view.currentTime >= view.duration;
+  }), { timeout: 15_000 }).toBe(true);
+  await expect(page.locator("#events-output")).toContainText("rendered r2");
+});
+
 test("dedicated HTTPS runtime reports no-WebGPU without receiving parent data", async ({ page }) => {
   const controlledRuntime = encodeURIComponent(`${runtimePage}&simulateNoWebGpu=1`);
   await page.goto(`${parentPage}?parent=8acafec5f4954c9a72a7f5ea05c7f6e6542d1085&runtime=${controlledRuntime}`);
@@ -57,7 +69,7 @@ test("dedicated HTTPS runtime keeps warmed simple-frame p95 under one second", a
 
 test("dedicated HTTPS runtime rejects oversized commands and ignores a stale revision", async ({ page }) => {
   await page.goto(`${acceptanceParent}&protocolTest=oversize`);
-  await expect(page.locator("#summary")).toHaveText("Source rejected by the fixed-runtime policy.", { timeout: 30_000 });
+  await expect(page.locator("#summary")).toHaveText("Source exceeds the 256 KiB fixed-runtime limit.", { timeout: 30_000 });
 
   await page.goto(`${acceptanceParent}&protocolTest=stale`);
   await expect(page.locator("#summary")).toHaveText("Cross-origin run, reactive scene, stop, and restart completed.", { timeout: 75_000 });

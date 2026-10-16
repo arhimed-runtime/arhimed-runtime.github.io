@@ -5,14 +5,14 @@
     {
       "target": "public/runtime-assets/pyodide/pyodide.mjs",
       "source": "https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.mjs",
-      "sha256": "6f1d60f7bf529beb300f0f47983c921d3982363640ba20af0e38efdddbc66109",
+      "sha256": "492e52c4e4c96110478f2a2839fbc3206418c40fb23f91b75cc2af87cf061c6a",
       "license": "MPL-2.0",
       "runtime": "Pyodide 0.27.0-dev (browser distribution v314.0.7)"
     },
     {
       "target": "public/runtime-assets/pyodide/pyodide.asm.mjs",
       "source": "https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.asm.mjs",
-      "sha256": "f7cdc8ece80678ceb712f8e65ebe6d3a83203a180c399865f49612a051693635",
+      "sha256": "dcf8907d5b4a88130bf4f4d193a32929f9b3e05357f76ad741517344c6349e62",
       "license": "MPL-2.0",
       "runtime": "Pyodide 0.27.0-dev (browser distribution v314.0.7)"
     },

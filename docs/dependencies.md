@@ -9,6 +9,6 @@ The lab runs the real browser build of ManimGX `0.1.1`, installed from npm with 
 - browser wheel: `manimgx-0.1.1-cp313-abi3-pyemscripten_2026_0_wasm32.whl`
 - wheel SHA-256: `ef8255890eeaa7281f15afe40c727b5df94199020003f5b698bf18aae94f92ae`
 
-The wheel is selected explicitly through `settings.manimgx`. Scene imports are limited to `import manimgx as m` and `import numpy as np`; NumPy is already pinned and preloaded from the local Pyodide assets. The runtime rejects every other import, which prevents the upstream 0.1.1 loader from installing arbitrary missing Python packages during the experiment.
+The wheel is selected explicitly through `settings.manimgx`. The worker parses each scene with Python `ast`, accepts all ordinary Python syntax, and permits documented `manimgx` import forms plus the fixed mathematical modules `numpy`, `math`, `cmath`, `statistics`, `random`, `fractions`, `decimal`, `dataclasses`, `functools`, `itertools`, `collections`, and `operator`. Its execution import hook enforces the same allowlist; neither it nor the locked director resolves or installs a package at scene-run time.
 
 The cross-origin prototype has shown that the stock 0.1.1 director still resolves dependencies declared by its wheel through PyPI. Its final deployment must use a locked, runtime-origin wheel set and a narrowly modified loader; see `docs/cross-origin-progress.md`.

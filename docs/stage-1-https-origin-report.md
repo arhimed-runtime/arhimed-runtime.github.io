@@ -34,7 +34,7 @@ img-src data: blob:; font-src data: blob:; media-src 'none'; object-src 'none';
 base-uri 'none'; form-action 'none'
 ```
 
-The protocol uses one `MessageChannel`, an exact parent-origin allowlist (`https://resarytrew.github.io`), `WindowProxy` identity, session UUID, protocol version, monotonic revision, request ID, and a 16 KiB source limit. Commands with a wrong session, wrong protocol, stale revision or missing transferred port do not control the runtime. The public acceptance test injected a stale authenticated-port cancel command; the normal run still completed. It also sent an otherwise valid source over 16 KiB and received `Source rejected by the fixed-runtime policy.`
+The protocol uses one `MessageChannel`, an exact parent-origin allowlist (`https://resarytrew.github.io`), `WindowProxy` identity, session UUID, protocol version, monotonic revision, request ID, and a 256 KiB source limit. Commands with a wrong session, wrong protocol, stale revision or missing transferred port do not control the runtime. The worker parses Python with `ast` and enforces a fixed import allowlist again while executing; it does not resolve or install packages from a scene.
 
 The parent deliberately contains synthetic DOM, localStorage, IndexedDB and OpenRouter-key controls. In both browsers the runtime reported all of them blocked. No control value is placed in the URL or the MessageChannel. Runtime page fetches, Worker fetches, localhost fetches and an unapproved external origin were blocked. A real Blob module Worker started successfully.
 
@@ -72,7 +72,7 @@ The unavailable-runtime URL also produces the explicit MessageChannel load timeo
 - Only Chrome and Edge on the recorded Windows machine are accepted. Other browsers remain unverified.
 - Browser isolation does not provide a hard global RAM or GPU-memory ceiling. The stop mechanism terminates the worker/context boundary, but cannot prove an absolute process-memory limit.
 - GitHub Pages serves this static runtime without a configurable `frame-ancestors` response header. The runtime therefore relies on separate origins, the iframe sandbox, strict CSP and the authenticated MessageChannel; being framed does not grant a caller a valid command port.
-- The accepted scene profile permits `import manimgx as m` and the explicitly pinned `import numpy as np` only. It rejects arbitrary Python imports, package installation and dynamic import mechanisms. Broader language support requires a new threat model and acceptance test.
+- The accepted scene profile permits all documented import styles for `manimgx`, pinned NumPy, and a fixed list of pure-Python mathematical/utility modules. It rejects arbitrary Python imports, package installation and dynamic import mechanisms. The public integration test covers `MathTex`, `Axes`, groups, `math`, `numpy`, `ValueTracker`, and `always_redraw` through playback completion.
 
 ## Stage 2 handoff: EngineAdapterV1
 

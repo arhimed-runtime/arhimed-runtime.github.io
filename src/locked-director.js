@@ -95,7 +95,7 @@ async function drain() {
 }
 
 const RUNNER = `
-import dataclasses, importlib.util, json, linecache, shutil, sys, traceback
+import ast, builtins, dataclasses, importlib.util, json, linecache, shutil, sys, traceback
 from pathlib import Path
 from pyodide.ffi import to_js
 from manimgx import _engine
@@ -103,6 +103,48 @@ from manimgx.config import Config, config
 from manimgx.scene import Scene
 
 FILMS = Path("/home/pyodide/films")
+
+# Parsing belongs to Python, not a JavaScript regular expression: valid syntax such
+# as decorators, comprehensions, triple-quoted strings and arbitrary whitespace is
+# therefore preserved. This approves only modules present in the immutable runtime.
+_USER_IMPORT_ROOTS = frozenset((
+    "manimgx", "numpy", "math", "cmath", "statistics", "random", "fractions",
+    "decimal", "dataclasses", "functools", "itertools", "collections", "operator",
+))
+_ORIGINAL_IMPORT = builtins.__import__
+
+def _import_root(name):
+    return name.split(".", 1)[0]
+
+def _validate_source(source, path):
+    tree = ast.parse(source, filename=str(path), mode="exec")
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            names = (alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom):
+            if node.level or not node.module:
+                raise ImportError(f"line {node.lineno}: relative imports are unavailable in the browser runtime")
+            names = (node.module,)
+        else:
+            continue
+        for name in names:
+            if _import_root(name) not in _USER_IMPORT_ROOTS:
+                raise ImportError(f"line {node.lineno}: import {name!r} is not part of the fixed browser runtime")
+    return tree
+
+def _scene_import(name, globals=None, locals=None, fromlist=(), level=0):
+    # Runtime packages keep their ordinary internal imports. Imports issued by the
+    # user scene are restricted even if the code calls __import__ directly.
+    if globals and globals.get("__name__") == "scene" and (level or _import_root(name) not in _USER_IMPORT_ROOTS):
+        raise ImportError(f"import {name!r} is not available to browser scenes")
+    return _ORIGINAL_IMPORT(name, globals, locals, fromlist, level)
+
+def _scene_builtins():
+    allowed = vars(builtins).copy()
+    allowed["__import__"] = _scene_import
+    for name in ("open", "input", "breakpoint", "help", "eval", "exec", "compile"):
+        allowed.pop(name, None)
+    return allowed
 
 def run(film, source, name, send):
     out = lambda data: send(to_js(data))
@@ -117,7 +159,9 @@ def run(film, source, name, send):
         spec = importlib.util.spec_from_file_location("scene", path)
         module = importlib.util.module_from_spec(spec)
         sys.modules["scene"] = module
-        exec(compile(source, str(path), "exec"), module.__dict__)
+        tree = _validate_source(source, path)
+        module.__dict__["__builtins__"] = _scene_builtins()
+        exec(compile(tree, str(path), "exec"), module.__dict__)
         scenes = [v for v in vars(module).values() if isinstance(v, type) and issubclass(v, Scene) and v.__module__ == "scene"]
         names = [s.__name__ for s in scenes]
         if not scenes:

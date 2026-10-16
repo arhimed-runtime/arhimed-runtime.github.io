@@ -17,6 +17,18 @@ test("locked ManimGX runtime renders through a cross-origin MessageChannel", asy
   await expect(page.locator("#summary")).toHaveText("Cross-origin run, reactive scene, stop, and restart completed.", { timeout: 75_000 });
 });
 
+test("locked runtime completes a documented MathTex and dynamic graph scene", async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.goto("http://127.0.0.1:4184/cross-origin-parent.html?scene=documented&runtime=http%3A%2F%2F127.0.0.1%3A4185%2Fcross-origin-runtime.html");
+  await expect(page.locator("#summary")).toHaveText("Cross-origin run, reactive scene, stop, and restart completed.", { timeout: 75_000 });
+  await expect(page.locator("#events-output")).toContainText("rendered r2");
+  const player = page.frameLocator("#runtime-frame").locator("manimgx-player");
+  await expect.poll(async () => player.evaluate((element) => {
+    const view = element as HTMLElement & { currentTime: number; duration: number };
+    return Number.isFinite(view.duration) && view.currentTime >= view.duration;
+  }), { timeout: 15_000 }).toBe(true);
+});
+
 test("runtime reports a controlled no-WebGPU failure without weakening isolation", async ({ page }) => {
   test.setTimeout(60_000);
   const runtime = "http%3A%2F%2F127.0.0.1%3A4185%2Fcross-origin-runtime.html%3FsimulateNoWebGpu%3D1";

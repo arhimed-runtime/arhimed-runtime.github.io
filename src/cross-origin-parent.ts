@@ -1,4 +1,4 @@
-import { CROSS_ORIGIN_PROTOCOL, REACTIVE_SCENE, SIMPLE_SCENE, type RuntimeCommand, type RuntimeEvent } from "./cross-origin-protocol";
+import { CROSS_ORIGIN_PROTOCOL, DOCUMENTED_SCENE, REACTIVE_SCENE, SIMPLE_SCENE, type RuntimeCommand, type RuntimeEvent } from "./cross-origin-protocol";
 import "./style.css";
 
 const frame = document.querySelector<HTMLIFrameElement>("#runtime-frame")!;
@@ -6,6 +6,7 @@ const summary = document.querySelector<HTMLElement>("#summary")!;
 const checks = document.querySelector<HTMLOutputElement>("#checks-output")!;
 const events = document.querySelector<HTMLElement>("#events-output")!;
 const suppliedRuntime = new URLSearchParams(location.search).get("runtime");
+const runDocumentedScene = new URLSearchParams(location.search).get("scene") === "documented";
 
 // These synthetic values make an accidental same-origin regression observable. They are
 // never serialised into a MessageChannel command or included in the iframe URL.
@@ -26,7 +27,7 @@ if (!suppliedRuntime) {
   let ready = false;
   let readyTimer = 0;
   let revision = 0;
-  let phase: "probe" | "simple" | "reactive" | "stopping" | "restart" | "done" = "probe";
+  let phase: "probe" | "documented" | "simple" | "reactive" | "stopping" | "restart" | "done" = "probe";
 
   function log(event: RuntimeEvent) {
     events.textContent += `${new Date().toISOString()} ${event.kind} r${event.revision}: ${event.detail}\n`;
@@ -43,9 +44,15 @@ if (!suppliedRuntime) {
   function beginNext(event: RuntimeEvent) {
     if (event.kind === "probe") {
       checks.textContent = JSON.stringify(event.data, null, 2);
-      phase = "simple";
-      summary.textContent = "Runtime isolation probes passed; rendering the simple ManimGX scene.";
-      send("run", SIMPLE_SCENE, "simple");
+      phase = runDocumentedScene ? "documented" : "simple";
+      summary.textContent = runDocumentedScene
+        ? "Runtime isolation probes passed; rendering documented ManimGX 0.1.1 features."
+        : "Runtime isolation probes passed; rendering the simple ManimGX scene.";
+      send("run", runDocumentedScene ? DOCUMENTED_SCENE : SIMPLE_SCENE, "simple");
+    } else if (event.kind === "rendered" && phase === "documented") {
+      phase = "reactive";
+      summary.textContent = "MathTex, Axes, groups, math imports and updater rendered; testing reactive playback.";
+      send("run", REACTIVE_SCENE, "reactive");
     } else if (event.kind === "rendered" && phase === "simple") {
       phase = "reactive";
       summary.textContent = "A WebGPU frame arrived; testing ValueTracker and always_redraw.";
