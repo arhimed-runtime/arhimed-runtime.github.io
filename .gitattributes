@@ -1,0 +1,2 @@
+# Runtime assets are content-addressed. Never rewrite their bytes on checkout.
+public/runtime-assets/** -text
