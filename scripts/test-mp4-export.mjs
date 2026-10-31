@@ -47,7 +47,8 @@ try {
           const context = canvas.getContext('2d', { willReadFrequently: true });
           const samples = [];
           for (const time of [0.1, 0.8]) {
-            await new Promise(ok => { video.onseeked = ok; video.currentTime = time; });
+            // seeked can precede presentation of the newly decoded frame.
+            await new Promise(ok => { video.requestVideoFrameCallback(() => ok()); video.currentTime = time; });
             context.drawImage(video, 0, 0);
             const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
             let count = 0, sumX = 0;

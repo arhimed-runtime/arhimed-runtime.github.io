@@ -28,3 +28,7 @@ Set `ARHIMED_MP4_RUNTIME_URL` to test the published runtime instead, or
 Frame capture runs in the same animation frame as ManimGX's queued draw, before
 the WebGPU canvas is presented and cleared. Waiting an extra frame captures black
 pixels from this player's non-preserved drawing buffer.
+
+Known export limits: video only, up to 180 seconds. The native ManimGX player
+draws its playback controls into the same canvas, so those controls also appear
+in the exported video.
