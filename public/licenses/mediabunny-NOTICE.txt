@@ -1,0 +1,11 @@
+Mediabunny 1.64.0
+Copyright (c) 2026-present, Vanilagy and contributors
+
+This Source Code Form is subject to the terms of the Mozilla Public
+License, v. 2.0. A copy is provided at mediabunny-MPL-2.0.txt.
+
+Mediabunny is distributed without source modifications. The corresponding
+source files are included in this pinned npm package:
+https://registry.npmjs.org/mediabunny/-/mediabunny-1.64.0.tgz
+
+Project: https://github.com/Vanilagy/mediabunny

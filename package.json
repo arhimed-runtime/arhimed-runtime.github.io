@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 127.0.0.1",
     "test": "playwright test",
+    "test:mp4": "node scripts/test-mp4-export.mjs",
     "fetch:locked-runtime-assets": "node scripts/fetch-locked-runtime-assets.mjs",
     "verify:locked-runtime-assets": "node scripts/verify-locked-runtime-assets.mjs",
     "verify:published-runtime-assets": "node scripts/verify-published-runtime-assets.mjs",
@@ -17,7 +18,8 @@
     "test:no-webgpu": "playwright test --config=playwright.no-webgpu.config.ts"
   },
   "dependencies": {
-    "manimgx": "0.1.1"
+    "manimgx": "0.1.1",
+    "mediabunny": "1.64.0"
   },
   "devDependencies": {
     "@playwright/test": "1.56.1",

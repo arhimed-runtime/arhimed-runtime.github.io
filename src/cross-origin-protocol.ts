@@ -7,7 +7,8 @@ export type RuntimeCommand = {
   sessionId: string;
   revision: number;
   requestId: string;
-  kind: "probe" | "run" | "cancel";
+  kind: "probe" | "run" | "cancel" | "export-mp4";
+  fps?: number;
   source?: string;
   label?: "simple" | "reactive" | "restart";
 };
@@ -17,9 +18,11 @@ export type RuntimeEvent = {
   sessionId: string;
   revision: number;
   requestId: string;
-  kind: "ready" | "status" | "probe" | "rendered" | "stopped" | "failed" | "rejected";
+  kind: "ready" | "status" | "probe" | "rendered" | "stopped" | "failed" | "rejected" | "export-progress" | "exported";
   detail: string;
-  data?: Record<string, boolean | number | string | null>;
+  data?: Record<string, boolean | number | string | null> | ArrayBuffer;
+  progress?: number;
+  capabilities?: { mp4Export: boolean };
 };
 
 export const SIMPLE_SCENE = `import manimgx as m

@@ -5,6 +5,7 @@ This file covers the exact artifacts in `runtime-assets.manifest.json`. The CI i
 | Component | Version | Licence checked | Evidence |
 | --- | --- | --- | --- |
 | ManimGX browser npm wrapper | 0.1.1 | MIT | `node_modules/manimgx/LICENSE`; SRI is in `package-lock.json` |
+| Mediabunny MP4 muxer | 1.64.0 | MPL-2.0 | `public/licenses/mediabunny-MPL-2.0.txt`; SRI is in `package-lock.json` |
 | ManimGX Python wheel | 0.1.1 | Composite expression from wheel metadata | `manimgx-0.1.1.dist-info/METADATA`, `LICENSE`, `LICENSE-THIRD-PARTY`, `LICENSE-LAVAPIPE`, `LICENSE-DXC` inside the wheel |
 | ManimGX Noto fonts | 2026.9.26.post1 | SIL Open Font License 1.1 | `manimgx_fonts-2026.9.26.post1.dist-info/METADATA` and `licenses/LICENSE` inside the wheel |
 | Pyodide loader and micropip | browser distribution v314.0.7 / 0.11.1 | MPL-2.0 | Pyodide distribution and package metadata |
@@ -16,3 +17,8 @@ This file covers the exact artifacts in `runtime-assets.manifest.json`. The CI i
 | svgelements | 1.9.6 | MIT | PyPI metadata and wheel |
 
 The ManimGX wheel's `License-Expression` is intentionally not simplified: it includes the engine and its bundled third-party components. A release that changes any artifact, hash, or licence evidence requires review before publication.
+
+Mediabunny by Vanilagy is distributed without source modifications. Its MPL-2.0
+license is published at `/licenses/mediabunny-MPL-2.0.txt`. The corresponding
+source is included in the pinned npm package at
+https://registry.npmjs.org/mediabunny/-/mediabunny-1.64.0.tgz.
