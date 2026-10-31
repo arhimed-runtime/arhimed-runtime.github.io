@@ -10,7 +10,14 @@ const lockedManimgxModule = (() => {
   const before = manimgx011.indexOf(start);
   const after = manimgx011.indexOf(end, before);
   if (before < 0 || after < 0) throw new Error("ManimGX 0.1.1 loader signature changed; refusing to build the locked runtime.");
-  return `${manimgx011.slice(0, before)}v.worker=()=>URL.createObjectURL(new Blob([${JSON.stringify(lockedDirector)}],{type:"text/javascript"}));${end}${manimgx011.slice(after + end.length)}`;
+  let module = `${manimgx011.slice(0, before)}v.worker=()=>URL.createObjectURL(new Blob([${JSON.stringify(lockedDirector)}],{type:"text/javascript"}));${end}${manimgx011.slice(after + end.length)}`;
+  // Keep lifecycle notifications tied to the exact native player/film. The
+  // upstream wrapper otherwise discards messages other than engine/feed/status.
+  const registration = "i.set(this.#r,{wait:";
+  const receiver = "e.onmessage=async({data:r})=>{";
+  if (!module.includes(registration) || !module.includes(receiver)) throw new Error("ManimGX lifecycle hook signature changed; refusing to build.");
+  module = module.replace(registration, "i.set(this.#r,{element:this,wait:");
+  return module.replace(receiver, `${receiver}if(r.arhimed){i.get(r.arhimed.film)?.element.dispatchEvent(new CustomEvent("arhimed-render",{detail:r.arhimed}));return;}if(r.status){for(const entry of i.values())entry.element.dispatchEvent(new CustomEvent("arhimed-status",{detail:r.status}));}`);
 })();
 
 function lockedManimgxDirector() {

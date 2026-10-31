@@ -59,3 +59,18 @@ To refresh the fixed assets, run `node scripts/fetch-scientific-assets.mjs`, the
 `python scripts/collect-scientific-notices.py`, integrity verification and build.
 Python is needed only for this optional notice-refresh step, never for viewing
 or building the application with already committed assets.
+
+## Rendering lifecycle
+
+Python completion and bounded stdout/stderr now pass from the director to the
+exact native player. `rendered` requires completed Python construction plus a
+usable GPU canvas; a first partial animation is insufficient. Exceptions carry
+their traceback to Studio. `cancel-export` aborts encoding and restores preview
+state, acknowledged with `export-cancelled`. Studio owns wall-clock deadlines
+and destroys the iframe for unresponsive Python/encoder tasks.
+
+Run `npm run test:lifecycle` with the same two preview servers to verify real
+completion, logs, failures, export cancellation and restart after an infinite
+Python loop. `ARHIMED_LIFECYCLE_RUNTIME_URL` selects the deployed runtime and
+`ARHIMED_LIFECYCLE_BROWSER=msedge` selects Edge. The browser does not expose
+per-process RAM measurements; Studio records memory telemetry as unavailable.

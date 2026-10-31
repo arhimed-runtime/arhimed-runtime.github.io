@@ -24,6 +24,17 @@ const SCIENTIFIC_PACKAGES = {
 let booted;
 let busy = false;
 let failed = false;
+let currentFilm;
+let logMessages = 0;
+let logCharacters = 0;
+const lifecycle = (film, kind, detail = "", stream) => {
+  const text = String(detail).slice(-16_000);
+  if (kind === "log") {
+    if (logMessages >= 128 || logCharacters >= 64_000) return;
+    logMessages++; logCharacters += text.length;
+  }
+  send({ arhimed: { film, kind, detail: text, stream } });
+};
 
 function send(data, transfer = []) {
   postMessage(data, transfer);
@@ -46,11 +57,13 @@ onmessage = ({ data }) => {
 };
 
 async function boot({ pyodide }) {
-  send({ status: "Loading Python…" });
+  send({ status: "Загрузка Python и Pyodide…" });
   const { loadPyodide } = await import(`${pyodide}pyodide.mjs`);
   const py = await loadPyodide({ indexURL: pyodide });
+  py.setStdout({ batched: text => { if (currentFilm !== undefined) lifecycle(currentFilm, "log", text + "\n", "stdout"); } });
+  py.setStderr({ batched: text => { if (currentFilm !== undefined) lifecycle(currentFilm, "log", text + "\n", "stderr"); } });
 
-  send({ status: "Loading locked Python packages…" });
+  send({ status: "Импорт закреплённых Python-пакетов…" });
   await py.loadPackage(["micropip", "numpy", "Pillow", "typing-extensions"]);
   const micropip = py.pyimport("micropip");
   const wheels = [
@@ -68,6 +81,7 @@ async function boot({ pyodide }) {
   const sitePackages = py.runPython("__import__('sysconfig').get_path('purelib')");
   py.FS.writeFile(`${sitePackages}/arhimed_science.py`, await helperResponse.text());
 
+  send({ status: "Инициализация WebGPU-рендерера…" });
   const built = py.runPython(`
 from manimgx import _engine
 from manimgx.drawing.typesetting import FONTS
@@ -109,11 +123,19 @@ async function drain() {
           continue;
         }
         const { source, scene } = run;
+        currentFilm = film;
+        logMessages = 0; logCharacters = 0;
+        send({ status: "Рендеринг сцены ManimGX…" });
+        lifecycle(film, "running");
         await python.prepare(source);
         // A missing import is an ordinary scene error. This runtime never resolves it.
-        python.runner(film, source, scene ?? null, feed);
+        const error = python.runner(film, source, scene ?? null, feed);
+        lifecycle(film, error ? "failed" : "completed", error || "Python scene construction completed.");
       } catch (error) {
         feed(python.note(JSON.stringify({ error: { message: message(error), type: "Error" } })));
+        lifecycle(film, "failed", message(error));
+      } finally {
+        currentFilm = undefined;
       }
       await new Promise((resolve) => setTimeout(resolve));
     }
@@ -209,8 +231,9 @@ def run(film, source, name, send):
         kind = scenes[names.index(name)] if name in names else scenes[0]
         out(_engine.note(json.dumps({"scenes": names, "scene": kind.__name__})))
         kind().render(take=out)
+        return ""
     except Exception as error:
-        report(out, path, error)
+        return report(out, path, error)
 
 def drop(film):
     path = FILMS / str(film) / "scene.py"
@@ -228,6 +251,7 @@ def report(out, path, error):
     trace = "".join(traceback.format_list(frames) + traceback.format_exception_only(error))
     line = frames[-1].lineno if frames else getattr(error, "lineno", None)
     out(_engine.note(json.dumps({"error": {"message": str(error), "type": type(error).__name__, "trace": trace, "line": line}})))
+    return trace
 
 run
 `;
