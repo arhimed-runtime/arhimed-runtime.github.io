@@ -9,6 +9,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "playwright test",
     "test:mp4": "node scripts/test-mp4-export.mjs",
+    "test:science": "node scripts/test-scientific-libraries.mjs",
     "fetch:locked-runtime-assets": "node scripts/fetch-locked-runtime-assets.mjs",
     "verify:locked-runtime-assets": "node scripts/verify-locked-runtime-assets.mjs",
     "verify:published-runtime-assets": "node scripts/verify-published-runtime-assets.mjs",

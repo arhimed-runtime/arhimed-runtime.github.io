@@ -14,6 +14,13 @@ function message(error) {
 }
 
 const queue = new Map();
+// Every dependency is copied locally and SHA-256 checked before deployment.
+// Load only libraries explicitly imported by the scene, keeping ordinary GX fast.
+const SCIENTIFIC_PACKAGES = {
+  sympy: ["sympy"], scipy: ["scipy"], matplotlib: ["matplotlib"],
+  Bio: ["biopython"], periodictable: ["pyparsing"],
+  schemdraw: ["matplotlib"], arhimed_science: ["matplotlib"],
+};
 let booted;
 let busy = false;
 let failed = false;
@@ -51,8 +58,15 @@ async function boot({ pyodide }) {
     "manimgx_fonts-2026.9.26.post1-py3-none-any.whl",
     "isosurfaces-0.1.2-py3-none-any.whl",
     "svgelements-1.9.6-py2.py3-none-any.whl",
+    "schemdraw-0.23-py3-none-any.whl",
+    "periodictable-2.1.0-py3-none-any.whl",
   ].map((name) => new URL(`../wheels/${name}`, pyodide).href);
   await micropip.install(wheels, { deps: false });
+
+  const helperResponse = await fetch(new URL("../python/arhimed_science.py", pyodide));
+  if (!helperResponse.ok) throw new Error("Scientific drawing helper is unavailable.");
+  const sitePackages = py.runPython("__import__('sysconfig').get_path('purelib')");
+  py.FS.writeFile(`${sitePackages}/arhimed_science.py`, await helperResponse.text());
 
   const built = py.runPython(`
 from manimgx import _engine
@@ -64,7 +78,21 @@ from manimgx.drawing.typesetting import FONTS
   const runner = py.runPython(RUNNER);
   const note = py.runPython("lambda text: to_js(_engine.note(text))");
   const drop = py.runPython("drop");
-  return { runner, note, drop };
+  const imports = py.runPython("scene_import_roots");
+  const loaded = new Set();
+  async function prepare(source) {
+    const proxy = imports(source);
+    const roots = proxy.toJs();
+    proxy.destroy();
+    const packages = [...new Set(roots.flatMap(root => SCIENTIFIC_PACKAGES[root] ?? []))].filter(name => !loaded.has(name));
+    if (!packages.length) return;
+    send({ status: `Loading scientific libraries: ${packages.join(', ')}…` });
+    await py.loadPackage(packages);
+    // Matplotlib must never try to open a GUI or load a browser backend.
+    if (packages.includes("matplotlib")) py.runPython("import matplotlib; matplotlib.use('Agg', force=True)");
+    packages.forEach(name => loaded.add(name));
+  }
+  return { runner, note, drop, prepare };
 }
 
 async function drain() {
@@ -81,6 +109,7 @@ async function drain() {
           continue;
         }
         const { source, scene } = run;
+        await python.prepare(source);
         // A missing import is an ordinary scene error. This runtime never resolves it.
         python.runner(film, source, scene ?? null, feed);
       } catch (error) {
@@ -110,11 +139,22 @@ FILMS = Path("/home/pyodide/films")
 _USER_IMPORT_ROOTS = frozenset((
     "manimgx", "numpy", "math", "cmath", "statistics", "random", "fractions",
     "decimal", "dataclasses", "functools", "itertools", "collections", "operator",
+    "sympy", "scipy", "matplotlib", "schemdraw", "Bio", "periodictable", "arhimed_science",
 ))
 _ORIGINAL_IMPORT = builtins.__import__
 
 def _import_root(name):
     return name.split(".", 1)[0]
+
+def scene_import_roots(source):
+    try:
+        tree = ast.parse(source, filename="<scene>", mode="exec")
+    except SyntaxError:
+        # Let run() preserve its normal line-numbered syntax diagnostic.
+        return []
+    return sorted({_import_root(name) for node in ast.walk(tree)
+        for name in ([alias.name for alias in node.names] if isinstance(node, ast.Import)
+                     else [node.module] if isinstance(node, ast.ImportFrom) else [])})
 
 def _validate_source(source, path):
     tree = ast.parse(source, filename=str(path), mode="exec")

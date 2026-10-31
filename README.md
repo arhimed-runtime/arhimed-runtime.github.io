@@ -32,3 +32,30 @@ pixels from this player's non-preserved drawing buffer.
 Known export limits: video only, up to 180 seconds. The native ManimGX player
 draws its playback controls into the same canvas, so those controls also appear
 in the exported video.
+
+## Scientific Python libraries
+
+The fixed runtime includes SymPy 1.14.0, SciPy 1.18.0, Schemdraw 0.23,
+Biopython 1.87, PeriodicTable 2.1.0 and Matplotlib 3.10.8, plus their pinned
+dependencies. Scientific Pyodide packages load on the first scene that imports
+them; ordinary scenes do not initialize the entire scientific stack.
+Every package is hosted on this runtime's origin and checked against the asset
+manifest before publication. Scene-triggered package installation and external
+package requests remain disabled.
+
+Use `from arhimed_science import figure_to_mobject, drawing_to_mobject` to embed
+Matplotlib figures and Schemdraw drawings without files or GUI windows. Figures
+are snapshots with their text preserved, fitted within the frame. The adapter
+closes figures after capture; native GX geometry can animate computed results.
+
+Six complete lessons live in `examples/science`. With the two preview servers
+above running, execute `npm run test:science` to render all six through the real
+authenticated cross-origin Python/WebGPU runtime. Screenshots are saved under
+`test-results/science`. Set `ARHIMED_SCIENCE_BROWSER=msedge` for Edge or
+`ARHIMED_SCIENCE_RUNTIME_URL` to the published runtime URL for deployment checks.
+The test also rejects external package requests. It requires a WebGPU adapter.
+
+To refresh the fixed assets, run `node scripts/fetch-scientific-assets.mjs`, then
+`python scripts/collect-scientific-notices.py`, integrity verification and build.
+Python is needed only for this optional notice-refresh step, never for viewing
+or building the application with already committed assets.

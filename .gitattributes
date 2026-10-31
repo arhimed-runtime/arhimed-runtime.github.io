@@ -1,2 +1,4 @@
 # Runtime assets are content-addressed. Never rewrite their bytes on checkout.
 public/runtime-assets/** -text
+# Preserve upstream license text, including its original whitespace.
+public/licenses/scientific-python-NOTICES.txt -whitespace
